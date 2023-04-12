@@ -1,0 +1,16 @@
+/AddressableAESEncrypt.sln
+/Assembly-CSharp.csproj
+/Assembly-CSharp-Editor.csproj
+/Unity.Addressables.csproj
+/Unity.Addressables.Editor.csproj
+/Unity.Addressables.Editor.Tests.csproj
+/Unity.Addressables.Tests.csproj
+/Unity.ResourceManager.csproj
+/Unity.ResourceManager.Tests.csproj
+/Temp
+/UserSettings
+/.vsconfig
+/.vs
+/Library
+/Logs
+/obj
