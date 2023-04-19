@@ -450,16 +450,13 @@ namespace UnityEngine.ResourceManagement.ResourceProviders
             {
                 m_Source = BundleSource.Local;
                 {
-                    if(File.Exists(m_TransformedInternalId))
-                    {
-                        var crc = m_Options == null ? 0 : m_Options.Crc;
+                    var crc = m_Options == null ? 0 : m_Options.Crc;
+                    if (Application.platform == RuntimePlatform.Android && m_TransformedInternalId.StartsWith("jar:", StringComparison.Ordinal))
+                        LoadLocalAssetBundle(m_TransformedInternalId, crc, true);
+                    else if(File.Exists(m_TransformedInternalId))
                         LoadLocalAssetBundle(m_TransformedInternalId, crc);
-                    }
                     else
-                    {
-                        var crc = m_Options == null ? 0 : m_Options.Crc;
                         LoadLocalAssetBundle(GetEncryptedAssetLocalPath(m_TransformedInternalId, m_Options), crc);
-                    }
 #if ENABLE_ADDRESSABLE_PROFILER
                     AddBundleToProfiler(Profiling.ContentStatus.Loading, m_Source);
 #endif
@@ -498,9 +495,28 @@ namespace UnityEngine.ResourceManagement.ResourceProviders
             }
         }
 
-        private void LoadLocalAssetBundle(String path, uint crc)
+        private void LoadLocalAssetBundle(String path, uint crc, bool useWebRequest = false)
         {
-            var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            Stream fileStream;
+            if(useWebRequest)
+            {
+                var webRequest = new UnityWebRequest(path);
+                DownloadHandlerBuffer dH = new DownloadHandlerBuffer();
+                webRequest.downloadHandler = dH;
+                webRequest.SendWebRequest();
+                while (true)
+                {
+                    if (webRequest.isDone)
+                    {
+                        fileStream = new MemoryStream(webRequest.downloadHandler.data);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            }
             var dataStream = new SeekableAesStream(fileStream);
             if (dataStream.CanSeek)
             {
